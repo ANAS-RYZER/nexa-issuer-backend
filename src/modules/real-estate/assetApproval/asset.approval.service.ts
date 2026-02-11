@@ -18,7 +18,7 @@ import {
 import { Asset, AssetDocument } from "../schema/asset.model";
 import { SendAssetApprovalDto } from "./dto/send-asset-approval.dto";
 import { Admin, AdminDocument } from "../../admin/schemas/admin.schema";
-import { EmailService } from "@/infra/email/email.service";
+import { EmailService } from "../../../infra/email/email.service";
 
 @Injectable()
 export class AssetApprovalService {

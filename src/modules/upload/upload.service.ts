@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { IAssetS3Object, IS3ObjectType, MimeTypes } from './interfaces/asset-s3-object.interface';
-import { GcpStorageService } from '@/infra/gcp/gcp-storage.service';
+import { GcpStorageService } from '../../infra/gcp/gcp-storage.service';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
