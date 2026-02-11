@@ -8,7 +8,7 @@ import {
   HttpStatus,
   Req,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@/modules/auth_issuer/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/modules/authIssuer/guards/jwt-auth.guard';
 import { SpvStatusService } from './spvStatus.service';
 import { CreateSpvStatusDto } from './dto/create-spv-status.dto';
 

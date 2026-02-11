@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthIssuerController } from './auth_issuer.controller';
 import { AuthIssuerService } from './auth_issuer.service';
 import { IssuerUser, IssuerUserSchema } from './schemas/issuer-user.schema';
-import { IssuerApplication, IssuerApplicationSchema } from '../issuer-applications/schemas/issuer-application.schema';
+import { IssuerApplication, IssuerApplicationSchema } from '../issuerApplications/schemas/issuer-application.schema';
 import { JwtTokenService } from './services/jwt.service';
 import { TokenStorageService } from './services/token-storage.service';
 import { OtpService } from './services/otp.service';

@@ -8,8 +8,8 @@ import {
   IssuerApplication,
   IssuerApplicationSchema,
 } from './schemas/issuer-application.schema';
-import { JwtAuthGuard } from '../auth_issuer/guards/jwt-auth.guard';
-import { AuthIssuerModule } from '../auth_issuer/auth_issuer.module';
+import { JwtAuthGuard } from '../authIssuer/guards/jwt-auth.guard';
+import { AuthIssuerModule } from '../authIssuer/auth_issuer.module';
 @Module({
   imports: [
     MongooseModule.forFeature([

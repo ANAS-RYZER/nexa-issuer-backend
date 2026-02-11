@@ -17,7 +17,7 @@ import {
 import {
   IssuerApplication,
   IssuerApplicationDocument,
-} from "../issuer-applications/schemas/issuer-application.schema";
+} from "../issuerApplications/schemas/issuer-application.schema";
 import { LoginDto } from "./dto/login.dto";
 import { SignupDto } from "./dto/signup.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";

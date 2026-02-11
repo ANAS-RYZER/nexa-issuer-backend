@@ -7,7 +7,7 @@ import { CheckTokenSymbolDto } from "./dto/check-token-symbol.dto";
 import { AssignTokenSymbolDto } from "./dto/assign-token-symbol.dto";
 import { AdminAssetListingQueryDto } from "./dto/admin-asset-listing-query.dto";
 import { PublicAssetListQueryDto } from "./dto/public-asset-list-query.dto";
-import { JwtAuthGuard } from "../auth_issuer/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../authIssuer/guards/jwt-auth.guard";
 import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 
 

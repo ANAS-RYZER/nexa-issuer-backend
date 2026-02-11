@@ -10,7 +10,7 @@ import { Model, Types } from "mongoose";
 import {
   IssuerUser,
   IssuerUserDocument,
-} from "../../auth_issuer/schemas/issuer-user.schema";
+} from "../../authIssuer/schemas/issuer-user.schema";
 import {
   assetApproval,
   AssetApprovalDocument,

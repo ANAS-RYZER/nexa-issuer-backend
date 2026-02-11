@@ -19,7 +19,7 @@ import {
   AssetIdQueryDto,
   TaxIdParamDto,
 } from './dto/additional-tax-query.dto';
-import { JwtAuthGuard } from '../../auth_issuer/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../authIssuer/guards/jwt-auth.guard';
 
 @Controller('additional-tax')
 @UseGuards(JwtAuthGuard)

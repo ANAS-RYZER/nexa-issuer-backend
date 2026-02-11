@@ -16,8 +16,8 @@ import {
   CreateIssuerApplicationDto,
   QueryIssuerApplicationDto,
 } from './dto';
-import { JwtAuthGuard } from '../auth_issuer/guards/jwt-auth.guard';
-import { AuthIssuerService } from '../auth_issuer/auth_issuer.service';
+import { JwtAuthGuard } from '../authIssuer/guards/jwt-auth.guard';
+import { AuthIssuerService } from '../authIssuer/auth_issuer.service';
 
 @Controller('issuer-applications')
 export class IssuerApplicationsController {

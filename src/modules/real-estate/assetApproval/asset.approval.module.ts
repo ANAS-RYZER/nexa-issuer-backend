@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 
-import { AuthIssuerModule } from "../../auth_issuer/auth_issuer.module";
+import { AuthIssuerModule } from "../../authIssuer/auth_issuer.module";
 import {
   assetApproval,
   AssetApprovalSchema,

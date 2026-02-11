@@ -7,7 +7,7 @@ import {
   AssetFeeConfig,
   AssetFeeConfigSchema,
 } from '../schema/assetFeeConfig.model';
-import { AuthIssuerModule } from '../../auth_issuer/auth_issuer.module';
+import { AuthIssuerModule } from '../../authIssuer/auth_issuer.module';
 
 @Module({
   imports: [

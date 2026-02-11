@@ -19,7 +19,7 @@ import {
   AssetIdQueryDto,
   AllocationIdParamDto,
 } from './dto/allocation-category-query.dto';
-import { JwtAuthGuard } from '../../auth_issuer/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../authIssuer/guards/jwt-auth.guard';
 
 @Controller('allocation-category')
 @UseGuards(JwtAuthGuard)
