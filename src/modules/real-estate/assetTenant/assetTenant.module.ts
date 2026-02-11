@@ -4,7 +4,7 @@ import { AssetTenantController } from './assetTenant.controller';
 import { AssetTenantService } from './assetTenant.service';
 import { AssetTenant, AssetTenantSchema } from '../schema/assetTenant.model';
 import { Asset, AssetSchema } from '../schema/asset.model';
-import { AuthIssuerModule } from '@/modules/auth_issuer/auth_issuer.module';
+import { AuthIssuerModule } from '../../auth_issuer/auth_issuer.module';
 
 @Module({
   imports: [

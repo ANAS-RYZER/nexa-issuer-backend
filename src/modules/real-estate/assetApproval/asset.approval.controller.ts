@@ -8,7 +8,7 @@ import {
   HttpStatus,
   Req,
 } from "@nestjs/common";
-import { JwtAuthGuard } from "@/modules/auth_issuer/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../../auth_issuer/guards/jwt-auth.guard";
 import { AssetApprovalService } from "./asset.approval.service";
 import { SendAssetApprovalDto } from "./dto/send-asset-approval.dto";
 

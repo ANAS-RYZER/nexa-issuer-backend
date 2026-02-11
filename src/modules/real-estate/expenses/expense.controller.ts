@@ -20,7 +20,7 @@ import {
   ExpenseIdParamDto,
   AssetIdParamDto,
 } from './dto/expense-query.dto';
-import { JwtAuthGuard } from '@/modules/auth_issuer/guards/jwt-auth.guard';
+import { JwtAuthGuard } from "../../auth_issuer/guards/jwt-auth.guard";
 
 @Controller('expense')
 @UseGuards(JwtAuthGuard)
