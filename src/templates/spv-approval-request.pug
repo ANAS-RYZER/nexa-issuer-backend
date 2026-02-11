@@ -1,0 +1,133 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title SPV Approval Request
+    style.
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px;
+        text-align: center;
+      }
+      .header h1 {
+        color: #ffffff;
+        margin: 0;
+        font-size: 28px;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .content h2 {
+        color: #333333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .content p {
+        color: #666666;
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+      .info-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #667eea;
+        border-radius: 4px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .info-row {
+        display: flex;
+        margin-bottom: 10px;
+      }
+      .info-label {
+        font-weight: bold;
+        color: #333333;
+        min-width: 140px;
+      }
+      .info-value {
+        color: #666666;
+      }
+      .comments-box {
+        background-color: #fff9e6;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .comments-label {
+        font-weight: bold;
+        color: #333333;
+        margin-bottom: 8px;
+      }
+      .comments-text {
+        color: #666666;
+        font-style: italic;
+      }
+      .status-badge {
+        display: inline-block;
+        background-color: #ffc107;
+        color: #ffffff;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      .footer {
+        background-color: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        border-top: 1px solid #eeeeee;
+      }
+      .footer p {
+        color: #999999;
+        font-size: 12px;
+        margin: 0;
+      }
+  body
+    .container
+      .header
+        h1 NEXA Issuer Admin
+      .content
+        h2 🔔 New SPV Approval Request
+        p Hello Admin,
+        p An issuer has submitted a new SPV for your review and approval.
+        .info-box
+          .info-row
+            .info-label Issuer Name:
+            .info-value= issuerName
+          .info-row
+            .info-label Issuer Email:
+            .info-value= issuerEmail
+          .info-row
+            .info-label SPV Name:
+            .info-value= spvName
+          .info-row
+            .info-label Status:
+            .info-value
+              span.status-badge= status
+        if issuerComments
+          .comments-box
+            .comments-label Issuer Comments:
+            .comments-text= issuerComments
+        p Please review the SPV details and take appropriate action.
+        p Thank you for your attention to this matter.
+      .footer
+        p This is an automated notification. Please do not reply to this email.
+
+
+
