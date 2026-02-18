@@ -11,11 +11,24 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Enable CORS
+     const defaultOrigins = [
+    'http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
+     "https://tokera.vercel.app/ " , 'https://yob-issuer-portal.vercel.app/'
+  ];
+  const envOrigins = configService
+    .get<string>("ALLOWED_ORIGINS")
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin) || [];
+  const allowedOrigins = [...new Set([...envOrigins, ...defaultOrigins])];
+  
+  // Enable CORS with limited origins
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   });
-
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
