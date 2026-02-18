@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsNumber, Min, Max } from 'class-validator';
 export class GenerateKycLinkDto {
   @IsString()
   @IsOptional()
-  levelName?: string = 'basic-kyc';
+  levelName?: string = 'id-and-liveness';
 
   @IsString()
   @IsOptional()

@@ -420,6 +420,7 @@ export class AuthService {
     userId: string,
     updateAccountDto: UpdateAccountDto,
   ): Promise<{ message: string; user: UserDocument }> {
+
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Invalid user ID');
     }
@@ -429,7 +430,7 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    // Check mobile number conflict
+    // Check mobile conflict
     if (updateAccountDto.mobileNumber) {
       const mobileConflict = await this.userModel.findOne({
         mobileNumber: updateAccountDto.mobileNumber,
@@ -443,7 +444,6 @@ export class AuthService {
       }
     }
 
-    // Update user
     Object.assign(user, updateAccountDto);
     await user.save();
 

@@ -124,14 +124,16 @@ export class AuthController {
    * Update account details (Protected route)
    * PUT /auth/account/:id
    */
-  @Put('account/:id')
+  @Put('account')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async updateAccount(
-    @Param('id') id: string,
+    @Req() req: any,
     @Body() updateAccountDto: UpdateAccountDto,
   ) {
-    const result = await this.authService.updateAccount(id, updateAccountDto);
+    const userId = req.user?.userId; 
+    const result = await this.authService.updateAccount(userId, updateAccountDto);
+
     return {
       statusCode: HttpStatus.OK,
       message: result.message,
