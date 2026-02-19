@@ -13,7 +13,7 @@ async function bootstrap() {
   // Enable CORS
      const defaultOrigins = [
     'http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
-     "https://tokera.vercel.app/ " , 'https://yob-issuer-portal.vercel.app/'
+     "https://tokera.vercel.app" , 'https://yob-issuer-portal.vercel.app'
   ];
   const envOrigins = configService
     .get<string>("ALLOWED_ORIGINS")
