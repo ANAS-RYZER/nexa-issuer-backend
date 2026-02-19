@@ -253,7 +253,7 @@ export class KycService {
     const timestamp = Math.floor(Date.now() / 1000);
 
     const requestBody = {
-      levelName: generateKycLinkDto.levelName || "basic-kyc",
+      levelName: generateKycLinkDto.levelName || "id-and-liveness",
       userId: userId,
       applicantIdentifiers: {
         email: user.email,
@@ -371,8 +371,8 @@ export class KycService {
           const profile = await this.fetchApplicantProfile(
             webhookData.applicantId,
           );
-          user.firstName = profile.info.firstName;
-          console.log(user.firstName);
+          user.legalName = profile.info.firstName;
+          user.dateOfBirth = profile.info.dob;
 
           await this.saveApplicantProfile(
             webhookData.applicantId,

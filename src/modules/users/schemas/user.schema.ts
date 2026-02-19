@@ -69,6 +69,18 @@ export class User {
   @Prop({ trim: true })
   mobileNumber?: string;
 
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  dateOfBirth?: Date;
+
+  @Prop({
+    type: String,
+    default: null
+  })
+  legalName?: string;
+
   // Timestamps (automatically managed by Mongoose)
   createdAt?: Date;
   updatedAt?: Date;

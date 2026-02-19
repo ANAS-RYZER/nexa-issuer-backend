@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 
-import { AuthIssuerModule } from "../../auth_issuer/auth_issuer.module";
+import { AuthIssuerModule } from "../../authIssuer/auth_issuer.module";
 import {
   assetApproval,
   AssetApprovalSchema,
@@ -9,7 +9,7 @@ import {
 import { Asset, AssetSchema } from "../schema/asset.model";
 import { AssetApprovalController } from "./asset.approval.controller";
 import { AssetApprovalService } from "./asset.approval.service";
-import { EmailModule } from "@/infra/email/email.module";
+import { EmailModule } from "../../../infra/email/email.module";
 import { AdminModule } from "../../admin/admin.module";
 
 @Module({

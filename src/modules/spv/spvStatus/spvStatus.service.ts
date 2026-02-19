@@ -7,9 +7,11 @@ import { CreateSpvStatusDto } from './dto/create-spv-status.dto';
 import {
   IssuerUser,
   IssuerUserDocument,
-} from '../../auth_issuer/schemas/issuer-user.schema';
+} from '../../authIssuer/schemas/issuer-user.schema';
 import { Admin, AdminDocument } from '../../admin/schemas/admin.schema';
-import { EmailService } from '@/infra/email/email.service';
+// import { EmailService } from './infra/email/email.service';
+import { EmailService } from '../../../infra/email/email.service';
+
 
 @Injectable()
 export class SpvStatusService {

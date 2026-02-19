@@ -21,8 +21,8 @@ import {
   BoardMemberDto,
   UpdateBoardMemberDto,
 } from "./dto/spv.dto";
-import { JwtAuthGuard } from "../auth_issuer/guards/jwt-auth.guard";
-import { CurrentUser } from "../auth_issuer/decorators/current-user.decorator";
+import { JwtAuthGuard } from "../authIssuer/guards/jwt-auth.guard";
+import { CurrentUser } from "../authIssuer/decorators/current-user.decorator";
 
 @Controller("spv")
 export class SPVController {

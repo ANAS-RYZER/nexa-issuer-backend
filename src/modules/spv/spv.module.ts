@@ -7,7 +7,7 @@ import { SPVController } from './spv.controller';
 import { SPV, SPVSchema } from './schemas/spv.schema';
 import { SpvStatusModule } from './spvStatus/spvStatus.module';
 import { spvStatus, SpvStatusSchema } from './schemas/spvstatus.schema';
-import { IssuerUser, IssuerUserSchema } from '../auth_issuer/schemas/issuer-user.schema';
+import { IssuerUser, IssuerUserSchema } from '../authIssuer/schemas/issuer-user.schema';
 
 @Module({
   imports: [

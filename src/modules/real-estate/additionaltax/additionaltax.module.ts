@@ -7,7 +7,7 @@ import {
   AdditionalTaxSchema,
 } from '../schema/assetAdditionalTax.model';
 import { Asset, AssetSchema } from '../schema/asset.model';
-import { AuthIssuerModule } from '@/modules/auth_issuer/auth_issuer.module';
+import { AuthIssuerModule } from '../../authIssuer/auth_issuer.module';
 
 @Module({
   imports: [

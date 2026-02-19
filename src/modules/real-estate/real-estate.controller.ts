@@ -7,7 +7,7 @@ import { CheckTokenSymbolDto } from "./dto/check-token-symbol.dto";
 import { AssignTokenSymbolDto } from "./dto/assign-token-symbol.dto";
 import { AdminAssetListingQueryDto } from "./dto/admin-asset-listing-query.dto";
 import { PublicAssetListQueryDto } from "./dto/public-asset-list-query.dto";
-import { JwtAuthGuard } from "../auth_issuer/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../authIssuer/guards/jwt-auth.guard";
 import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 
 
@@ -28,6 +28,9 @@ export class AssetController {
         @Req() req: any,
     ) {
         // Extract user ID from token if present (for future user-specific features)
+        console.log("Request",req)
+        const ip=req.headers["x-forwarded-for"]
+        console.log("Ip",ip)
         const userId = req.user?.userId;
         
         const result = await this.assetService.getPublicAssetList(query);

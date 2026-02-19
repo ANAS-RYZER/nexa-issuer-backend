@@ -4,8 +4,8 @@ import { SpvStatusController } from './spvStatus.controller';
 import { SpvStatusService } from './spvStatus.service';
 import { spvStatus, SpvStatusSchema } from '../schemas/spvstatus.schema';
 import { SPV, SPVSchema } from '../schemas/spv.schema';
-import { AuthIssuerModule } from '../../auth_issuer/auth_issuer.module';
-import { EmailModule } from '@/infra/email/email.module';
+import { AuthIssuerModule } from '../../authIssuer/auth_issuer.module';
+import { EmailModule } from '../../../infra/email/email.module';
 import { AdminModule } from '../../admin/admin.module';
 
 @Module({
