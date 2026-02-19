@@ -5,16 +5,16 @@ import axios from "axios";
 export class IpLocationService {
   private readonly logger = new Logger(IpLocationService.name);
 
-  async getCountryFromIp(ip: string): Promise<string | null> {
+  async getCurrencyFromIp(ip: string): Promise<string | null> {
     try {
       if (!ip || ip === "::1" || ip === "127.0.0.1") {
-        return "IN";
+        return "INR";
       }
 
       const data = await axios.get(`https://ipapi.co/${ip}/json`);
       console.log("IP Location Data:", data);
-      const country = data?.data?.country_code || null;
-      return country;
+      const currency = data?.data?.currency || null;
+      return currency ? currency : null;
     } catch (error) {
       this.logger.error(`Failed to fetch country for IP: ${ip}`);
       return null;

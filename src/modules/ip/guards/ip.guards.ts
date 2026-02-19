@@ -1,19 +1,11 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { IpLocationService } from "../ip.service";
 
 @Injectable()
 export class IpGuard implements CanActivate {
-
-  constructor(
-    private readonly ipLocationService: IpLocationService
-  ) {}
+  constructor(private readonly ipLocationService: IpLocationService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-
     const request = context.switchToHttp().getRequest();
 
     const ip =
@@ -24,10 +16,9 @@ export class IpGuard implements CanActivate {
 
     request.userIp = ip;
 
-    const country =
-      await this.ipLocationService.getCountryFromIp(ip);
+    const currency = await this.ipLocationService.getCurrencyFromIp(ip);
 
-    request.userCountry = country;
+    request.userCurrency = currency;
 
     return true;
   }

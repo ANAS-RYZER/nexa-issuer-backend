@@ -1,10 +1,16 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Asset, AssetSchema } from "./schema/asset.model";
-import { AssetFeeConfig, AssetFeeConfigSchema } from "./schema/assetFeeConfig.model";
+import {
+  AssetFeeConfig,
+  AssetFeeConfigSchema,
+} from "./schema/assetFeeConfig.model";
 import { AssetExpense, AssetExpenseSchema } from "./schema/assetExpense.model";
 import { SPV, SPVSchema } from "../spv/schemas/spv.schema";
-import { IssuerUser, IssuerUserSchema } from "../authIssuer/schemas/issuer-user.schema";
+import {
+  IssuerUser,
+  IssuerUserSchema,
+} from "../authIssuer/schemas/issuer-user.schema";
 import { AssetController } from "./real-estate.controller";
 import { AssetService } from "./real-estate.service";
 import { AuthIssuerModule } from "../authIssuer/auth_issuer.module";
@@ -28,6 +34,7 @@ import { AssetTermsAndConditionsModule } from "./assetTermsAndConditions/assetTe
 import { NearByLocationModule } from "./nearByLocation/nearByLocation.module";
 import { AssetApprovalModule } from "./assetApproval/asset.approval.module";
 import { IpLocationService } from "../ip/ip.service";
+import { ExchangeRateModule } from "../exchangeRate/exchange-rate.module";
 
 @Module({
   imports: [
@@ -58,9 +65,10 @@ import { IpLocationService } from "../ip/ip.service";
     AssetTermsAndConditionsModule,
     NearByLocationModule,
     AssetApprovalModule,
+    ExchangeRateModule,
   ],
   controllers: [AssetController],
-  providers: [AssetService,IpLocationService],
+  providers: [AssetService, IpLocationService],
   exports: [
     AssetService,
     MongooseModule, // Export MongooseModule so other modules can access the models
