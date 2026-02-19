@@ -320,6 +320,7 @@ export class AssetService {
                 name: 1,
                 registrationNumber: 1,
                 currency: 1,
+                boardMembers:1
               },
             },
           ],
