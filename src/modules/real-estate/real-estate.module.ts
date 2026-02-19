@@ -27,6 +27,7 @@ import { AssetTenantModule } from "./assetTenant/assetTenant.module";
 import { AssetTermsAndConditionsModule } from "./assetTermsAndConditions/assetTermsAndConditions.module";
 import { NearByLocationModule } from "./nearByLocation/nearByLocation.module";
 import { AssetApprovalModule } from "./assetApproval/asset.approval.module";
+import { IpLocationService } from "../ip/ip.service";
 
 @Module({
   imports: [
@@ -59,7 +60,7 @@ import { AssetApprovalModule } from "./assetApproval/asset.approval.module";
     AssetApprovalModule,
   ],
   controllers: [AssetController],
-  providers: [AssetService],
+  providers: [AssetService,IpLocationService],
   exports: [
     AssetService,
     MongooseModule, // Export MongooseModule so other modules can access the models

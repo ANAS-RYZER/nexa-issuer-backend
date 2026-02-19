@@ -6,7 +6,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-"build": "nest build",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -87,8 +87,8 @@
       "**/*.(t|j)s"
     ],
     "_moduleAliases": {
-  "@": "dist"
-},
+      "@": "dist"
+    },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
