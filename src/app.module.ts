@@ -12,6 +12,9 @@ import { SPVModule } from './modules/spv/spv.module';
 import { AssetModule } from './modules/real-estate/real-estate.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { LocationsModule } from './modules/locations/location.module';
+import { ScheduleModule } from '@nestjs/schedule'; 
+import {ExchangeRateModule} from './modules/exchangeRate/exchange-rate.module';
+import { GlobalCacheModule } from './infra/cache/cache.module';
 
 @Module({
   imports: [
@@ -20,6 +23,8 @@ import { LocationsModule } from './modules/locations/location.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    ScheduleModule.forRoot(), 
 
     // Infrastructure
     DatabaseModule,
@@ -33,7 +38,9 @@ import { LocationsModule } from './modules/locations/location.module';
     SPVModule,
     AssetModule,
     UploadModule,
-    LocationsModule
+    LocationsModule,
+    GlobalCacheModule,
+    ExchangeRateModule
   ],
   controllers: [AppController],
   providers: [AppService],
