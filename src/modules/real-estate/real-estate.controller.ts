@@ -115,7 +115,7 @@ export class AssetController {
                 data: assets.data,
                 message: assets.message,
             }
-        } catch (error) {
+        } catch (error:any) {
             return {
                 data: [],
                 message: error.message,
