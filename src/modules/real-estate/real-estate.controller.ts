@@ -46,16 +46,18 @@ export class AssetController {
     // console.log("Ip", ip);
     const userId = req.user?.userId;
     console.log("User ID in Controller:", req.ip);
-    console.log("User ID in Controller:", req.userCountry);
+    const currency = req.userCurrency || "USD";
 
-    const result = await this.assetService.getPublicAssetList(query);
+    const result = await this.assetService.getPublicAssetList(query, currency);
 
     return {
       statusCode: HttpStatus.OK,
+      message: result.message,
       data: result.assets,
+      userCurrency: result.userCurrency,
       pagination: result.pagination,
       filters: result.filters,
-      message: result.message,
+
       // Include user context if logged in (for debugging)
       ...(userId && { userContext: { userId, isAuthenticated: true } }),
     };

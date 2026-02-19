@@ -27,6 +27,7 @@ import {
   AdminAssetListingResponse,
   AdminAssetListingItem,
 } from "./interfaces/admin-asset-listing.interface";
+import { ExchangeRateService } from "../exchangeRate/exchange-rate.service";
 
 @Injectable()
 export class AssetService {
@@ -37,6 +38,8 @@ export class AssetService {
     private readonly assetFeeConfigModel: Model<AssetFeeConfigDocument>,
     @InjectModel(SPV.name)
     private readonly spvModel: Model<SPVDocument>,
+
+    private readonly exchanteRateService: ExchangeRateService,
   ) {}
 
   /**
@@ -51,23 +54,49 @@ export class AssetService {
    * Get all public assets with advanced filtering, sorting, and search
    * Optimized and scalable implementation
    */
-  async getPublicAssetList(query: {
-    page?: number;
-    limit?: number;
-    sort?: 'high-returns' | 'low-returns' | 'newest';
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-    assetStatus?: 'active' | 'completed' | 'waitlist';
-    category?: string;
-    class?: string;
-    search?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    minPrice?: number;
-    maxPrice?: number;
-  }): Promise<{
+  async convertCurrency(
+    from: string,
+    to: string,
+    amount: number,
+  ): Promise<number> {
+    try {
+      const convertedAmount = await this.exchanteRateService.convert(
+        from,
+        to,
+        amount,
+      );
+      console.log(
+        `Converted ${amount} from ${from} to ${to}: ${convertedAmount}`,
+      );
+      return convertedAmount;
+    } catch (error: any) {
+      console.error("Currency conversion error:", error);
+      throw new BadRequestException(
+        `Currency conversion failed: ${error.message}`,
+      );
+    }
+  }
+  async getPublicAssetList(
+    query: {
+      page?: number;
+      limit?: number;
+      sort?: "high-returns" | "low-returns" | "newest";
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+      assetStatus?: "active" | "completed" | "waitlist";
+      category?: string;
+      class?: string;
+      search?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      minPrice?: number;
+      maxPrice?: number;
+    },
+    currency: string,
+  ): Promise<{
     assets: any[];
+    userCurrency: string;
     pagination: {
       page: number;
       limit: number;
@@ -102,7 +131,7 @@ export class AssetService {
       // BUILD FILTER QUERY
       // ========================================
       const filter: any = {
-        status: AssetStatus.APPROVED  // Base requirement: only approved assets
+        status: AssetStatus.APPROVED, // Base requirement: only approved assets
       };
 
       // ========================================
@@ -110,14 +139,14 @@ export class AssetService {
       // ========================================
       if (query.assetStatus) {
         switch (query.assetStatus) {
-          case 'active':
+          case "active":
             // Active: Approved assets with tokens available
-            filter['tokenInformation.availableTokensToBuy'] = { $gt: 0 };
+            filter["tokenInformation.availableTokensToBuy"] = { $gt: 0 };
             break;
-          
-          case 'completed':
+
+          case "completed":
             // Completed: Approved assets with no tokens available (sold out)
-            filter['tokenInformation.availableTokensToBuy'] = 0;
+            filter["tokenInformation.availableTokensToBuy"] = 0;
             break;
         }
       }
@@ -137,33 +166,33 @@ export class AssetService {
       // LOCATION FILTERS (Case-insensitive)
       // ========================================
       if (query.city) {
-        filter.city = new RegExp(query.city, 'i');
+        filter.city = new RegExp(query.city, "i");
       }
 
       if (query.state) {
-        filter.state = new RegExp(query.state, 'i');
+        filter.state = new RegExp(query.state, "i");
       }
 
       if (query.country) {
-        filter.country = new RegExp(query.country, 'i');
+        filter.country = new RegExp(query.country, "i");
       }
 
       // ========================================
       // PRICE RANGE FILTER
       // ========================================
       if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-        filter['tokenInformation.tokenPrice'] = {};
-        
+        filter["tokenInformation.tokenPrice"] = {};
+
         if (query.minPrice !== undefined) {
-          filter['tokenInformation.tokenPrice'].$gte = query.minPrice;
+          filter["tokenInformation.tokenPrice"].$gte = query.minPrice;
         }
-        
+
         if (query.maxPrice !== undefined) {
-          filter['tokenInformation.tokenPrice'].$lte = query.maxPrice;
+          filter["tokenInformation.tokenPrice"].$lte = query.maxPrice;
         }
       }
       if (query.search) {
-        const searchRegex = new RegExp(query.search, 'i');
+        const searchRegex = new RegExp(query.search, "i");
         filter.$or = [
           { name: searchRegex },
           { city: searchRegex },
@@ -173,32 +202,31 @@ export class AssetService {
         ];
       }
 
-
       let sort: any = {};
 
       // Priority 1: Advanced sort options
       if (query.sort) {
         switch (query.sort) {
-          case 'high-returns':
-            sort = { 'investmentPerformance.irr': -1 };
+          case "high-returns":
+            sort = { "investmentPerformance.irr": -1 };
             break;
-          case 'low-returns':
-            sort = { 'investmentPerformance.irr': 1 };
+          case "low-returns":
+            sort = { "investmentPerformance.irr": 1 };
             break;
-          case 'newest':
+          case "newest":
             sort = { createdAt: -1 };
             break;
         }
-      } 
+      }
       // Priority 2: Standard sortBy + sortOrder
       else if (query.sortBy) {
-        sort[query.sortBy] = query.sortOrder === 'asc' ? 1 : -1;
-      } 
+        sort[query.sortBy] = query.sortOrder === "asc" ? 1 : -1;
+      }
       // Default: Sort by newest
       else {
         sort = { createdAt: -1 };
       }
-      
+
       // Get total count with all filters applied
       const total = await this.assetModel.countDocuments(filter);
 
@@ -206,24 +234,44 @@ export class AssetService {
       const assets = await this.assetModel
         .find(filter)
         .select(
-          'class category name about country state city landmark ' +
-          'totalPropertyValueAfterFees investmentPerformance.grossRentalYield ' +
-          'investmentPerformance.irr tokenInformation.tokenSupply ' +
-          'tokenInformation.tokenPrice tokenInformation.minimumTokensToBuy ' +
-          'tokenInformation.maximumTokensToBuy tokenInformation.availableTokensToBuy ' +
-          'issuerId spvId status createdAt updatedAt media'
+          "class category name about country state city landmark currency " +
+            "totalPropertyValueAfterFees investmentPerformance.grossRentalYield " +
+            "investmentPerformance.irr tokenInformation.tokenSupply " +
+            "tokenInformation.tokenPrice tokenInformation.minimumTokensToBuy " +
+            "tokenInformation.maximumTokensToBuy tokenInformation.availableTokensToBuy " +
+            "issuerId spvId status createdAt updatedAt media",
         )
-        .populate('issuerId', 'email firstName lastName phoneNumber')
-        .populate('spvId', 'name')
+        .populate("issuerId", "email firstName lastName phoneNumber")
+        .populate("spvId", "name")
         .sort(sort)
         .skip(skip)
         .limit(limit)
         .lean();
 
+      const assetsWithConvertedCurrency = await Promise.all(
+        assets.map(async (asset) => ({
+          ...asset,
+          tokenInformation: {
+            ...asset.tokenInformation,
+            tokenPrice: await this.convertCurrency(
+              asset.currency,
+              currency,
+              asset?.tokenInformation?.tokenPrice || 0,
+            ),
+          },
+          totalPropertyValueAfterFees: await this.convertCurrency(
+            asset.currency,
+            currency,
+            asset?.totalPropertyValueAfterFees || 0,
+          ),
+        })),
+      );
+
       const totalPages = Math.ceil(total / limit);
 
       return {
-        assets,
+        assets: assetsWithConvertedCurrency,
+        userCurrency: currency,
         pagination: {
           page,
           limit,
@@ -244,9 +292,9 @@ export class AssetService {
           maxPrice: query.maxPrice,
           sort: query.sort,
         },
-        message: 'User assets fetched successfully',
+        message: "User assets fetched successfully",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new BadRequestException(
         `Failed to fetch public assets: ${error.message}`,
       );
@@ -258,19 +306,17 @@ export class AssetService {
    * Includes all related information: company, fees, amenities, reviews, bookmarks, etc.
    * Optimized aggregation pipeline for performance
    */
-  async getPublicAssetById(
-    assetId: string,
-    investorId?: string,
-  ): Promise<any> {
+  async getPublicAssetById(assetId: string, investorId?: string): Promise<any> {
     // Validate asset ID
     if (!Types.ObjectId.isValid(assetId)) {
-      throw new BadRequestException('Invalid asset ID format');
+      throw new BadRequestException("Invalid asset ID format");
     }
 
     const objectId = new Types.ObjectId(assetId);
-    const investorObjectId = investorId && Types.ObjectId.isValid(investorId)
-      ? new Types.ObjectId(investorId)
-      : null;
+    const investorObjectId =
+      investorId && Types.ObjectId.isValid(investorId)
+        ? new Types.ObjectId(investorId)
+        : null;
 
     // ========================================
     // BUILD AGGREGATION PIPELINE
@@ -284,10 +330,10 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'issuerprofiles',  // ✅ Correct collection name
-          let: { issuerId: '$issuerId' },
+          from: "issuerprofiles", // ✅ Correct collection name
+          let: { issuerId: "$issuerId" },
           pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$issuerId'] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$issuerId"] } } },
             {
               $project: {
                 _id: 1,
@@ -301,44 +347,44 @@ export class AssetService {
               },
             },
           ],
-          as: 'issuer',
+          as: "issuer",
         },
       },
-      { $unwind: { path: '$issuer', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$issuer", preserveNullAndEmptyArrays: true } },
 
       // ========================================
       // LOOKUP SPV/COMPANY
       // ========================================
       {
         $lookup: {
-          from: 'spvs',
-          let: { spvId: '$spvId' },
+          from: "spvs",
+          let: { spvId: "$spvId" },
           pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$spvId'] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$spvId"] } } },
             {
               $project: {
                 name: 1,
                 registrationNumber: 1,
                 currency: 1,
-                boardMembers:1
+                boardMembers: 1,
               },
             },
           ],
-          as: 'company',
+          as: "company",
         },
       },
-      { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$company", preserveNullAndEmptyArrays: true } },
 
       // ========================================
       // LOOKUP FAQS
       // ========================================
       {
         $lookup: {
-          from: 'faqs',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "faqs",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'faqs',
+          as: "faqs",
         },
       },
 
@@ -347,11 +393,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assettenants',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assettenants",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'tenants',
+          as: "tenants",
         },
       },
 
@@ -360,11 +406,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assetdocuments',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assetdocuments",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'documents',
+          as: "documents",
         },
       },
 
@@ -373,11 +419,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'amenities',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "amenities",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'amenities',
+          as: "amenities",
         },
       },
 
@@ -386,11 +432,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assetExpenses',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assetExpenses",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'expenses',
+          as: "expenses",
         },
       },
 
@@ -399,11 +445,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'features',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "features",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'features',
+          as: "features",
         },
       },
 
@@ -412,11 +458,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'riskfactors',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "riskfactors",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'riskFactors',
+          as: "riskFactors",
         },
       },
 
@@ -425,11 +471,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'riskdisclosures',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "riskdisclosures",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'riskDisclosures',
+          as: "riskDisclosures",
         },
       },
 
@@ -438,11 +484,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assettermsandconditions',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assettermsandconditions",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'termsAndConditions',
+          as: "termsAndConditions",
         },
       },
 
@@ -451,11 +497,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'exitopportunities',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "exitopportunities",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'exitOpportunities',
+          as: "exitOpportunities",
         },
       },
 
@@ -464,11 +510,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assetAdditionalTaxes',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assetAdditionalTaxes",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'additionalTaxes',
+          as: "additionalTaxes",
         },
       },
 
@@ -477,11 +523,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assetduediligencelegals',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assetduediligencelegals",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'dueDiligenceLegal',
+          as: "dueDiligenceLegal",
         },
       },
 
@@ -490,11 +536,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assetduediligencestructures',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assetduediligencestructures",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'dueDiligenceStructure',
+          as: "dueDiligenceStructure",
         },
       },
 
@@ -503,11 +549,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'assetduediligencevaluations',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "assetduediligencevaluations",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'dueDiligenceValuation',
+          as: "dueDiligenceValuation",
         },
       },
 
@@ -516,11 +562,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'documenttemplates',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "documenttemplates",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'signatureDocuments',
+          as: "signatureDocuments",
         },
       },
 
@@ -529,11 +575,11 @@ export class AssetService {
       // ========================================
       {
         $lookup: {
-          from: 'nearbylocations',
-          localField: '_id',
-          foreignField: 'assetId',
+          from: "nearbylocations",
+          localField: "_id",
+          foreignField: "assetId",
           pipeline: [{ $project: { assetId: 0 } }],
-          as: 'nearByLocations',
+          as: "nearByLocations",
         },
       },
 
@@ -554,7 +600,7 @@ export class AssetService {
 
     if (!result || result.length === 0) {
       throw new NotFoundException(
-        'Asset not found or not approved for public viewing',
+        "Asset not found or not approved for public viewing",
       );
     }
 
@@ -587,7 +633,7 @@ export class AssetService {
     const nearByLocationsByType: Record<string, any[]> = {};
     if (asset.nearByLocations && asset.nearByLocations.length > 0) {
       asset.nearByLocations.forEach((location: any) => {
-        const type = location.locationType || 'other';
+        const type = location.locationType || "other";
         if (!nearByLocationsByType[type]) {
           nearByLocationsByType[type] = [];
         }
@@ -1247,9 +1293,8 @@ export class AssetService {
     queryParams: AdminAssetListingQueryDto,
     issuerId: string,
   ): Promise<AdminAssetListingResponse> {
-  
     if (!mongoose.Types.ObjectId.isValid(issuerId)) {
-      throw new BadRequestException('Invalid issuer ID format');
+      throw new BadRequestException("Invalid issuer ID format");
     }
 
     const matchStage: Record<string, any> = {
@@ -1612,5 +1657,4 @@ export class AssetService {
       totalCount,
     };
   }
-  
 }
