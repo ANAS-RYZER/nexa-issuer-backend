@@ -28,6 +28,9 @@ export class AssetController {
         @Req() req: any,
     ) {
         // Extract user ID from token if present (for future user-specific features)
+        console.log("Request",req)
+        const ip=req.headers["x-forwarded-for"]
+        console.log("Ip",ip)
         const userId = req.user?.userId;
         
         const result = await this.assetService.getPublicAssetList(query);
