@@ -46,7 +46,7 @@ export class AssetController {
     // console.log("Ip", ip);
     const userId = req.user?.userId;
     console.log("User ID in Controller:", req.ip);
-    const currency = req.userCurrency || "USD";
+    const currency = req.userCurrency
 
     const result = await this.assetService.getPublicAssetList(query, currency);
 

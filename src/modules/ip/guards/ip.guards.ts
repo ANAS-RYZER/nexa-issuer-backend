@@ -15,10 +15,12 @@ export class IpGuard implements CanActivate {
       null;
 
     request.userIp = ip;
-
-    const currency = await this.ipLocationService.getCurrencyFromIp(ip);
-
-    request.userCurrency = currency;
+    try {
+      const currency = await this.ipLocationService.getCurrencyFromIp(ip);
+      request.userCurrency = currency;
+    } catch (error) {
+      console.log("Error in IP Guard:", error);
+    }
 
     return true;
   }
