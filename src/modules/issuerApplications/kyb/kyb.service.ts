@@ -31,9 +31,9 @@ export class KybService {
   ) {
     const path = '/resources/applicants?levelName=kyb-ryzer-test';
     const url = `${this.baseUrl}${path}`;
-    const issuerid = '12346'
+const issuerId = `business_${Date.now()}`;
     const payload = {
-      externalUserId: issuerid,  
+      externalUserId: issuerId,  
       fixedInfo: {
         companyInfo: {
           companyName,
@@ -162,7 +162,7 @@ async createCompanyAndGenerateToken(
 
   const tokenPayload = {
     userId: applicantId,      // MUST be applicantId from step 1
-    levelName: 'kyb-kyb-ryzer-test',
+    levelName: 'kyb-ryzer-test',
   };
 
   const tokenBody = JSON.stringify(tokenPayload);
