@@ -16,6 +16,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import {ExchangeRateModule} from './modules/exchangeRate/exchange-rate.module';
 import { GlobalCacheModule } from './infra/cache/cache.module';
 import { OrdersModule } from './modules/orders/order.module';
+import { KybModule } from './modules/issuerApplications/kyb/kyb.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { OrdersModule } from './modules/orders/order.module';
     GlobalCacheModule,
     ExchangeRateModule,
     OrdersModule,
+    KybModule
   ],
   controllers: [AppController],
   providers: [AppService],
