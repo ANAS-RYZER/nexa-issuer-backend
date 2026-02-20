@@ -116,6 +116,84 @@ async updateOrderStatus(
   return { message: 'Order status updated successfully', status: order.status };
 }
 
+async getUserOrders(
+  investorId: string,
+  page: number = 1,
+  limit: number = 10,
+): Promise<any> {
+
+  const skip = (page - 1) * limit;
+
+  // fetch orders + total count in parallel
+  const [orders, total] = await Promise.all([
+    this.orderModel
+      .find({ investorId: new Types.ObjectId(investorId) })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+
+    this.orderModel.countDocuments({
+      investorId: new Types.ObjectId(investorId),
+    }),
+  ]);
+
+  if (!orders.length) {
+    return {
+      message: 'No orders found',
+      orders: [],
+      pagination: { total: 0, page, limit, totalPages: 0 },
+    };
+  }
+
+  // collect asset ids safely
+  const assetIds = [
+    ...new Set(orders.map(o => o.assetId?.toString()).filter(Boolean)),
+  ].map(id => new Types.ObjectId(id));
+
+  // fetch assets once
+  const assets = await this.assetModel
+    .find({ _id: { $in: assetIds } })
+    .lean();
+
+  const assetMap = new Map(
+    assets.map(a => [a._id.toString(), a]),
+  );
+
+  // attach asset info (same logic, cleaner)
+  const formattedOrders = orders.map(order => {
+    const asset = assetMap.get(order.assetId?.toString());
+
+    return {
+      ...order,
+      asset: asset
+        ? {
+            _id: asset._id,
+            name: asset.name,
+            currency: asset.currency,
+            pricePerSft: asset.pricePerSft,
+            location: {
+              city: asset.city,
+              state: asset.state,
+              country: asset.country,
+            },
+          }
+        : null,
+    };
+  });
+
+  return {
+    message: 'Orders fetched successfully',
+    orders: formattedOrders,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
 
   /**
    * Get single order by ID
