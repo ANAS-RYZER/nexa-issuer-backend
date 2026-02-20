@@ -1,5 +1,7 @@
 import {
   Body,
+  Get,
+  Param,
   Controller,
   Post,
   UseGuards,
@@ -42,36 +44,6 @@ export class KybController {
     };
   }
 
-  @Post('token')
-    // @UseGuards(JwtAuthGuard)
-   async generateToken(@Req() req: Request) {
-    //   const issuerId = (req as any).user?.userId;
-
-    //   if (!issuerId) {
-    //     throw new ForbiddenException('Unauthorized');
-    //   }
-
-    const token = await this.kybService.generateAccessToken();
-    return {
-        success: true,
-        message: 'Access token generated successfully',
-        data: token,
-    };
-   }
-
-   @Post('create-application')
-   async createapplication(@Body() dto: CreateKybCompanyDto) {
-    const result = await this.kybService.createCompanyAndGenerateToken(
-        dto.companyName,
-        dto.country,
-    );
-
-    return {
-        success: true,
-        message: 'KYB applicant created and SDK token generated',
-        data: result,
-    };
-    }
 
     @Post('webhook')
     @HttpCode(HttpStatus.OK)
@@ -88,4 +60,24 @@ export class KybController {
 
         return response;
     }
+
+  @Get('applicant/:applicantId')
+  getApplicant(@Param('applicantId') applicantId: string) {
+      return this.kybService.getApplicant(applicantId); 
+}
+
+@Post('kyb-link')
+  async createKybLink(
+    @Body()
+    body: {
+      levelName: string;
+      applicantId: string;
+    },
+  ) {
+    return this.kybService.generateHostedKybLink(
+      body.levelName,
+      body.applicantId,
+    );
+  }
+
 }

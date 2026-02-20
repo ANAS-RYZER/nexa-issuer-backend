@@ -29,19 +29,25 @@ export class KybService {
     companyName: string,
     country: string,
   ) {
-    const path = '/resources/applicants?levelName=kyb-ryzer-test';
+    const path = '/resources/applicants?levelName=kyb-level';
     const url = `${this.baseUrl}${path}`;
-const issuerId = `business_${Date.now()}`;
+    const issuerId = `business_${Date.now()}`;
     const payload = {
-      externalUserId: issuerId,  
+      externalUserId: issuerId,
+      type: "company",
+      info: {
+        companyInfo: {
+        companyName,
+        country,
+        }
+      },
       fixedInfo: {
         companyInfo: {
           companyName,
           country,
         },
-        type:"company"
       },
-    };
+  };
 
     const body = JSON.stringify(payload);
     const ts = Math.floor(Date.now() / 1000);
@@ -68,129 +74,68 @@ const issuerId = `business_${Date.now()}`;
     }
   }
 
- async generateAccessToken() {
-  const path = '/resources/accessTokens/sdk';
-  const url = `${this.baseUrl}${path}`;
 
-  const payload = {
-    userId: '12346',   // must be applicantId
-    levelName: 'kyb-ryzer-test',
-  };
-
-  // IMPORTANT: stringify once
-  const body = JSON.stringify(payload);
-
-  const ts = Math.floor(Date.now() / 1000);
-  const signature = this.sign(ts, 'POST', path, body);
-
+async getApplicant(applicantId: string) {
   try {
-    const response = await axios({
-      method: 'POST',
-      url,
-      data: body,                 // send EXACT same string you signed
-      timeout: 15000,
+    const method = 'GET';
+    const path = `/resources/applicants/${applicantId}/one`;
+    const ts = Math.floor(Date.now() / 1000).toString();
+
+    const signature = crypto
+      .createHmac('sha256', this.secret)
+      .update(ts + method + path)
+      .digest('hex');
+
+    const response = await axios.get(`${this.baseUrl}${path}`, {
       headers: {
         'X-App-Token': this.token,
         'X-App-Access-Ts': ts,
         'X-App-Access-Sig': signature,
-        'Content-Type': 'application/json',
       },
     });
 
     return response.data;
-  } catch (error) {
-    const err = error as AxiosError<any>;
 
-    throw new InternalServerErrorException({
-      message: 'Sumsub access token generation failed',
-      error: err.response?.data || err.message,
-    });
+  } catch (error: any) {
+    console.error('Sumsub get applicant error:', error?.response?.data || error.message);
+    throw new InternalServerErrorException('Failed to fetch applicant from Sumsub');
   }
 }
 
-async createCompanyAndGenerateToken(
-  companyName: string,
-  country: string,
-) {
-  /* ---------------- CREATE APPLICANT ---------------- */
-  const applicantPath = '/resources/applicants?levelName=kyb-ryzer-test';
-  const applicantUrl = `${this.baseUrl}${applicantPath}`;
+async generateHostedKybLink(levelName: string, applicantId: string) {
+    const path = '/resources/sdkIntegrations/levels/-/websdkLink';
+    const url = `${this.baseUrl}${path}`;
 
-  const issuerId = '123456'; // replace with real issuerId from DB/JWT
-
-  const applicantPayload = {
-    externalUserId: issuerId,
-    type: 'company',
-    fixedInfo: {
-      companyInfo: {
-        companyName,
-        country,
-      },
-    },
-  };
-
-  const applicantBody = JSON.stringify(applicantPayload);
-  const ts1 = Math.floor(Date.now() / 1000);
-  const sig1 = this.sign(ts1, 'POST', applicantPath, applicantBody);
-
-  let applicantId: string;
-
-  try {
-    const applicantRes = await axios.post(applicantUrl, applicantPayload, {
-      headers: {
-        'X-App-Token': this.token,
-        'X-App-Access-Ts': ts1.toString(),
-        'X-App-Access-Sig': sig1,
-        'Content-Type': 'application/json',
-      },
-      timeout: 15000,
-    });
-
-    applicantId = applicantRes.data.id; // Sumsub returns applicant id
-  } catch (error) {
-    const err = error as AxiosError<any>;
-    throw new InternalServerErrorException({
-      message: 'Applicant creation failed',
-      error: err.response?.data || err.message,
-    });
-  }
-
-  /* ---------------- GENERATE SDK TOKEN ---------------- */
-
-  const tokenPath = '/resources/accessTokens/sdk';
-  const tokenUrl = `${this.baseUrl}${tokenPath}`;
-
-  const tokenPayload = {
-    userId: applicantId,      // MUST be applicantId from step 1
-    levelName: 'kyb-ryzer-test',
-  };
-
-  const tokenBody = JSON.stringify(tokenPayload);
-  const ts2 = Math.floor(Date.now() / 1000);
-  const sig2 = this.sign(ts2, 'POST', tokenPath, tokenBody);
-
-  try {
-    const tokenRes = await axios.post(tokenUrl, tokenPayload, {
-      headers: {
-        'X-App-Token': this.token,
-        'X-App-Access-Ts': ts2.toString(),
-        'X-App-Access-Sig': sig2,
-        'Content-Type': 'application/json',
-      },
-      timeout: 15000,
-    });
-
-    return {
-      applicantId,
-      sdkToken: tokenRes.data,
+    const payload = {
+      levelName,
+      userId: applicantId,   // must be Sumsub applicantId
+      ttlInSecs: 1800,
     };
-  } catch (error) {
-    const err = error as AxiosError<any>;
-    throw new InternalServerErrorException({
-      message: 'Token generation failed',
-      error: err.response?.data || err.message,
-    });
+
+    const body = JSON.stringify(payload);
+    const ts = Math.floor(Date.now() / 1000);
+    const signature = this.sign(ts, 'POST', path, body);
+
+    try {
+      const response = await axios.post(url, body, {
+        headers: {
+          'X-App-Token': this.token,
+          'X-App-Access-Ts': ts.toString(),
+          'X-App-Access-Sig': signature,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      return {
+        kybLink: response.data.url,
+      };
+    } catch (error) {
+      const err = error as AxiosError<any>;
+      throw new InternalServerErrorException({
+        message: 'Sumsub KYB link generation failed',
+        error: err.response?.data || err.message,
+      });
+    }
   }
-}
 
 }
