@@ -15,6 +15,7 @@ import { LocationsModule } from './modules/locations/location.module';
 import { ScheduleModule } from '@nestjs/schedule'; 
 import {ExchangeRateModule} from './modules/exchangeRate/exchange-rate.module';
 import { GlobalCacheModule } from './infra/cache/cache.module';
+import { OrdersModule } from './modules/orders/order.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { GlobalCacheModule } from './infra/cache/cache.module';
     UploadModule,
     LocationsModule,
     GlobalCacheModule,
-    ExchangeRateModule
+    ExchangeRateModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
