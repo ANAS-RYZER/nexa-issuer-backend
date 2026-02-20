@@ -16,7 +16,7 @@ export class IpLocationService {
       }
 
       const data = await axios.get(`https://ipapi.co/${ip}/json`);
-      console.log("IP Location Data:", data);
+      // console.log("IP Location Data:", data);
       const currency = data?.data?.currency || null;
       return currency ? currency : null;
     } catch (error) {

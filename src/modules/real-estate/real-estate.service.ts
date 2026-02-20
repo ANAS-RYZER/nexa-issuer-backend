@@ -66,7 +66,7 @@ export class AssetService {
         amount,
       );
       console.log(
-        `Converted ${amount} from ${from} to ${to}: ${convertedAmount}`,
+        `Converted  from ${from} to ${to}`,
       );
       return convertedAmount;
     } catch (error: any) {
