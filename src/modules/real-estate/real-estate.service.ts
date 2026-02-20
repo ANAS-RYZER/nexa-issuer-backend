@@ -306,7 +306,11 @@ export class AssetService {
    * Includes all related information: company, fees, amenities, reviews, bookmarks, etc.
    * Optimized aggregation pipeline for performance
    */
-  async getPublicAssetById(assetId: string, investorId?: string): Promise<any> {
+  async getPublicAssetById(
+    assetId: string,
+    currency: string,
+    investorId?: string,
+  ): Promise<any> {
     // Validate asset ID
     if (!Types.ObjectId.isValid(assetId)) {
       throw new BadRequestException("Invalid asset ID format");
@@ -644,8 +648,94 @@ export class AssetService {
     // ========================================
     // BUILD ENRICHED RESPONSE
     // ========================================
+    const convertedPricePerSft = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.pricePerSft || 0,
+    );
+    const convertedTotalPriceAfterFees = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.totalPropertyValueAfterFees || 0,
+    );
+    const convertedBasePropertyValue = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.basePropertyValue || 0,
+    );
+    const convertedRentPerSft = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.rentPerSft || 0,
+    );
+    const convertedGrossMonthlyRent = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.grossMonthlyRent || 0,
+    );
+    const convertedNetMonthlyRent = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.netMonthlyRent || 0,
+    );
+    const convertedGrossAnnualRent = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.grossAnnualRent || 0,
+    );
+    const convertedNetAnnualRent = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.netAnnualRent || 0,
+    );
+    const convertedMonthlyExpenses = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.expenses?.monthlyExpenses || 0,
+    );
+    const convertedAnnualExpenses = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.expenses?.annualExpenses || 0,
+    );
+    const convertedNetCashFlow = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.rentalInformation?.netCashFlow || 0,
+    );
+    const convertedTokenPrice = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.tokenInformation?.tokenPrice || 0,
+    );
+    const convertedTotalFundsRaised = await this.convertCurrency(
+      asset.currency,
+      currency,
+      asset.totalFundsRaised || 0,
+    );
     const enrichedAsset = {
       ...asset,
+      pricePerSft: convertedPricePerSft,
+      totalPropertyValueAfterFees: convertedTotalPriceAfterFees,
+      basePropertyValue: convertedBasePropertyValue,
+      rentalInformation: {
+        ...asset.rentalInformation,
+        rentPerSft: convertedRentPerSft,
+        grossMonthlyRent: convertedGrossMonthlyRent,
+        netMonthlyRent: convertedNetMonthlyRent,
+        grossAnnualRent: convertedGrossAnnualRent,
+        netAnnualRent: convertedNetAnnualRent,
+        expenses: {
+          monthlyExpenses: convertedMonthlyExpenses,
+          annualExpenses: convertedAnnualExpenses,
+        },
+        netCashFlow: convertedNetCashFlow,
+      },
+      tokenInformation: {
+        ...asset.tokenInformation,
+        tokenPrice: convertedTokenPrice,
+      },
+      totalFundsRaised: convertedTotalFundsRaised,
       fees: assetFeesByTypes,
       nearByLocations: nearByLocationsByType,
       dueDiligence: {
@@ -656,7 +746,6 @@ export class AssetService {
       // Set defaults for Order-related fields (until Order model is implemented)
       investors: asset.investors || [],
       issuer: asset.issuer || null,
-      totalFundsRaised: asset.totalFundsRaised || 0,
       completedOrdersCount: asset.completedOrdersCount || 0,
       // Clean up aggregation artifacts
       dueDiligenceLegal: undefined,

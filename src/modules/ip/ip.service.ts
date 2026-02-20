@@ -12,7 +12,7 @@ export class IpLocationService {
   async getCurrencyFromIp(ip: string): Promise<string | null> {
     try {
       if (!ip || ip === "::1" || ip === "127.0.0.1") {
-        return "EUR";
+        return "INR";
       }
 
       const data = await axios.get(`https://ipapi.co/${ip}/json`);

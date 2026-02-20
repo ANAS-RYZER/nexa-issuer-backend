@@ -46,7 +46,7 @@ export class AssetController {
     // console.log("Ip", ip);
     const userId = req.user?.userId;
     console.log("User ID in Controller:", req.ip);
-    const currency = req.userCurrency
+    const currency = req.userCurrency;
 
     const result = await this.assetService.getPublicAssetList(query, currency);
 
@@ -68,6 +68,7 @@ export class AssetController {
    */
   @Get("user/assets/:assetId")
   @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(IpGuard)
   @HttpCode(HttpStatus.OK)
   async getPublicAssetById(
     @Param("assetId") assetId: string,
@@ -76,15 +77,18 @@ export class AssetController {
   ) {
     // Priority: Manual investorId > Token userId > null
     const effectiveInvestorId = investorId || req.user?.userId;
+    const currency = req.userCurrency;
 
     const asset = await this.assetService.getPublicAssetById(
       assetId,
+      currency,
       effectiveInvestorId,
     );
 
     return {
       statusCode: HttpStatus.OK,
       data: asset,
+      userCurrency: currency,
       message: "Asset details fetched successfully",
       // Include auth context for debugging
       ...(req.user?.userId && {
