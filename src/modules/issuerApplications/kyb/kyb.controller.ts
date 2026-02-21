@@ -80,4 +80,27 @@ export class KybController {
     );
   }
 
+@Post('create-applicant')
+@UseGuards(JwtAuthGuard)
+async create(
+  @Body() dto: CreateKybCompanyDto,
+  @Req() req: Request,
+) {
+  const issuerId = (req as any).user?.userId;
+  if (!issuerId) {
+      throw new ForbiddenException('Unauthorized');
+    }
+  const result = await this.kybService.createCompanyAndGenerateLink(
+    issuerId,
+    dto.companyName,
+    dto.country,
+  );
+
+  return {
+    success: true,
+    message: 'Company created & KYB link generated',
+    data: result,
+  };
+}
+
 }
