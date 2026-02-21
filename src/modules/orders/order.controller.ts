@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   Req,
   HttpCode,
   HttpStatus,
@@ -61,6 +62,29 @@ export class OrdersController {
     return this.ordersService.updateOrderStatus(investorId, orderId, dto);
   }
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getMyOrders(
+    @Req() req: Request,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const investorId = (req as any).user?.userId;
+    if (!investorId) throw new ForbiddenException('Unauthorized');
+
+    const result = await this.ordersService.getUserOrders(
+      investorId,
+      Number(page),
+      Number(limit),
+    );
+
+    return {
+      success: true,
+      message: result.message,
+      data: result.orders,
+      pagination: result.pagination,
+    };
+  }
   
   /**
    * GET /orders/:id

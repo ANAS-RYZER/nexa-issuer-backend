@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException , InternalServerErrorException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Order, OrderDocument, OrderStatus } from './schemas/order.schema';
@@ -92,28 +92,150 @@ export class OrdersService {
 
 // order.service.ts
 async updateOrderStatus(
-  investorId: string,  
+  investorId: string,
   orderId: string,
   dto: UpdateOrderStatusDto,
 ): Promise<{ message: string; status?: OrderStatus }> {
+
   const order = await this.orderModel.findById(orderId);
   if (!order) throw new NotFoundException('Order not found');
 
-  // Check if the investor owns this order
+  // Check ownership
   if (order.investorId.toString() !== investorId) {
     throw new ForbiddenException('You are not authorized to update this order');
   }
 
-  // If order is already completed
+  // Prevent updating completed order
   if (order.status === OrderStatus.COMPLETED) {
-    return { message: 'Your order is already successfully completed', status: order.status };
+    return {
+      message: 'Your order is already successfully completed',
+      status: order.status,
+    };
   }
 
-  // Update status
+  /**
+   * TOKEN TRANSFER LOGIC
+   */
+  if (dto.status === OrderStatus.TOKEN_TRANSFERRED) {
+
+    const asset = await this.assetModel.findById(order.assetId);
+    if (!asset) throw new NotFoundException('Asset not found');
+
+    // HARD RUNTIME GUARD (required for your schema)
+    if (!asset.tokenInformation) {
+      throw new InternalServerErrorException(
+        'Asset token information missing. Please configure token details for this asset.',
+      );
+    }
+
+    // NOW TYPE IS SAFE
+    const tokenInfo = asset.tokenInformation;
+
+    const available = tokenInfo.availableTokensToBuy ?? 0;
+    const ordered = order.numberOfTokens ?? 0;
+
+    if (ordered <= 0) {
+      throw new BadRequestException('Invalid token quantity in order');
+    }
+
+    if (ordered > available) {
+      throw new ForbiddenException('Not enough tokens available in asset');
+    }
+
+    // Deduct tokens safely
+    tokenInfo.availableTokensToBuy = available - ordered;
+
+    await asset.save();
+  }
+
+  /**
+   * UPDATE ORDER STATUS
+   */
   order.status = dto.status;
   await order.save();
 
-  return { message: 'Order status updated successfully', status: order.status };
+  return {
+    message: 'Order status updated successfully',
+    status: order.status,
+  };
+}
+
+async getUserOrders(
+  investorId: string,
+  page: number = 1,
+  limit: number = 10,
+): Promise<any> {
+
+  const skip = (page - 1) * limit;
+
+  // fetch orders + total count in parallel
+  const [orders, total] = await Promise.all([
+    this.orderModel
+      .find({ investorId: new Types.ObjectId(investorId) })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+
+    this.orderModel.countDocuments({
+      investorId: new Types.ObjectId(investorId),
+    }),
+  ]);
+
+  if (!orders.length) {
+    return {
+      message: 'No orders found',
+      orders: [],
+      pagination: { total: 0, page, limit, totalPages: 0 },
+    };
+  }
+
+  // collect asset ids safely
+  const assetIds = [
+    ...new Set(orders.map(o => o.assetId?.toString()).filter(Boolean)),
+  ].map(id => new Types.ObjectId(id));
+
+  // fetch assets once
+  const assets = await this.assetModel
+    .find({ _id: { $in: assetIds } })
+    .lean();
+
+  const assetMap = new Map(
+    assets.map(a => [a._id.toString(), a]),
+  );
+
+  // attach asset info (same logic, cleaner)
+  const formattedOrders = orders.map(order => {
+    const asset = assetMap.get(order.assetId?.toString());
+
+    return {
+      ...order,
+      asset: asset
+        ? {
+            _id: asset._id,
+            name: asset.name,
+            currency: asset.currency,
+            pricePerSft: asset.pricePerSft,
+            location: {
+              city: asset.city,
+              state: asset.state,
+              country: asset.country,
+            },
+          }
+        : null,
+    };
+  });
+
+  return {
+    message: 'Orders fetched successfully',
+    orders: formattedOrders,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 }
 
 
